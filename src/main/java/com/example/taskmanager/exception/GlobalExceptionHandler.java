@@ -1,4 +1,4 @@
-package com.example.taskmanager.execptions;
+package com.example.taskmanager.exception;
 
 import java.util.Arrays;
 import java.util.Map;

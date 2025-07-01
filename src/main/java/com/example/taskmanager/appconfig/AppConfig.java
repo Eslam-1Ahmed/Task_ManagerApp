@@ -3,8 +3,8 @@ package com.example.taskmanager.appconfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.example.taskmanager.utiltis.impl.AppUtilsV1;
-import com.example.taskmanager.utiltis.impl.AppUtilsV2;
+import com.example.taskmanager.utils.impl.AppUtilsV1;
+import com.example.taskmanager.utils.impl.AppUtilsV2;
 
 @Configuration
 public class AppConfig {

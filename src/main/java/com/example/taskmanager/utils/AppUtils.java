@@ -1,4 +1,4 @@
-package com.example.taskmanager.utiltis;
+package com.example.taskmanager.utils;
 
 public interface AppUtils {
     

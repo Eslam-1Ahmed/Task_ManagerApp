@@ -1,4 +1,4 @@
-package com.example.taskmanager.execptions;
+package com.example.taskmanager.exception;
 public class UserNotFoundException extends RuntimeException {
     public UserNotFoundException(String message){
         super(message);

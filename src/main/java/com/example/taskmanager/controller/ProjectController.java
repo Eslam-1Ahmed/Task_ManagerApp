@@ -36,7 +36,7 @@ public class ProjectController {
             return ResponseEntity.badRequest().body(new ApiResponse<>(false, "Validation Errors", errors));
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(
-                new ApiResponse<>(false, projectService.addProject(projectRequestDTO), null));
+                new ApiResponse<>(true, projectService.addProject(projectRequestDTO), null));
     }
 
     @GetMapping("/get")

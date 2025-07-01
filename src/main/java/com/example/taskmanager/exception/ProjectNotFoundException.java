@@ -1,4 +1,4 @@
-package com.example.taskmanager.execptions;
+package com.example.taskmanager.exception;
 
 public class ProjectNotFoundException extends RuntimeException {
     public ProjectNotFoundException(String message) {

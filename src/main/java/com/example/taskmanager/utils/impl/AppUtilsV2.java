@@ -1,8 +1,8 @@
-package com.example.taskmanager.utiltis.impl;
+package com.example.taskmanager.utils.impl;
 
 import org.springframework.beans.factory.annotation.Value;
 
-import com.example.taskmanager.utiltis.AppUtils;
+import com.example.taskmanager.utils.AppUtils;
 
 public class AppUtilsV2 implements AppUtils {
 

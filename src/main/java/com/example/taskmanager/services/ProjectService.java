@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.taskmanager.dto.ProjectRequestDTO;
 import com.example.taskmanager.dto.ProjectResponseDTO;
-import com.example.taskmanager.execptions.UserNotFoundException;
+import com.example.taskmanager.exception.UserNotFoundException;
 import com.example.taskmanager.mapper.ProjectMapper;
 import com.example.taskmanager.model.ProjectEntity;
 import com.example.taskmanager.model.UserEntity;

@@ -11,9 +11,9 @@ import org.springframework.stereotype.Service;
 
 import com.example.taskmanager.dto.ProjectMemberDto;
 import com.example.taskmanager.enums.MembershipStatus;
-import com.example.taskmanager.execptions.MembershipNotfoundException;
-import com.example.taskmanager.execptions.ProjectNotFoundException;
-import com.example.taskmanager.execptions.UserNotFoundException;
+import com.example.taskmanager.exception.MembershipNotfoundException;
+import com.example.taskmanager.exception.ProjectNotFoundException;
+import com.example.taskmanager.exception.UserNotFoundException;
 import com.example.taskmanager.model.ProjectEntity;
 import com.example.taskmanager.model.ProjectMembershipEntity;
 import com.example.taskmanager.model.UserEntity;

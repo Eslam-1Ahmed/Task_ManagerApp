@@ -20,7 +20,7 @@ import com.example.taskmanager.enums.TaskStatus;
 import com.example.taskmanager.model.TaskEntity;
 import com.example.taskmanager.response.ApiResponse;
 import com.example.taskmanager.services.TaskService;
-import com.example.taskmanager.utiltis.ValidationUtils;
+import com.example.taskmanager.utils.ValidationUtils;
 
 import jakarta.validation.Valid;
 import java.util.List;

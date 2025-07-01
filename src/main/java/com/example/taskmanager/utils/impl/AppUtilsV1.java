@@ -1,8 +1,8 @@
-package com.example.taskmanager.utiltis.impl;
+package com.example.taskmanager.utils.impl;
 
 import org.springframework.context.annotation.Scope;
 
-import com.example.taskmanager.utiltis.AppUtils;
+import com.example.taskmanager.utils.AppUtils;
 @Scope("prototype")
 public class AppUtilsV1 implements AppUtils {
     
