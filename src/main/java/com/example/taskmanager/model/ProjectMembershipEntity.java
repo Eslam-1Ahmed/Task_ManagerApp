@@ -32,7 +32,7 @@ public class ProjectMembershipEntity {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "username", nullable = false)
     private UserEntity user;
 
     @ManyToOne

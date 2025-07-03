@@ -34,10 +34,6 @@ public class TaskRequestDto {
 
     @NotNull(message = "Price is requierd")
     private Double price;
-    
-    @NotNull(message = "Owner Id is requierd")
-    private Long ownerId;
-
     private TaskStatus status = TaskStatus.TODO;
 
 }

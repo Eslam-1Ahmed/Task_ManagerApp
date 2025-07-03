@@ -3,8 +3,11 @@ package com.example.taskmanager.security.jwt;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+
+import com.example.taskmanager.model.UserEntity;
 
 import java.security.Key;
 import java.util.Date;
@@ -14,10 +17,16 @@ import java.util.function.Function;
 
 @Service
 public class JwtService {
+    @Value("${jwt.secret}")
+    private String secretKey;
 
-    private final String SECRET_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30";
+    @Value("${jwt.expiration}")
+    private long expirationTime;
 
-    public String generateToken(UserDetails userDetails) {
+    @Value("${jwt.Refreshexpiration}")
+    private long refreshExpirationTime;
+
+    public String generateToken(UserEntity userDetails) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", userDetails.getAuthorities().stream().findFirst().get().getAuthority());
 
@@ -25,7 +34,19 @@ public class JwtService {
                 .setClaims(claims)
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
+                .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
+                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String generateRefershToken(UserEntity userDetails) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", userDetails.getAuthorities().stream().findFirst().get().getAuthority());
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(userDetails.getUsername())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + refreshExpirationTime))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -61,7 +82,7 @@ public class JwtService {
     }
 
     private Key getSignInKey() {
-        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+        return Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
 }

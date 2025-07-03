@@ -22,7 +22,7 @@ public class TaskResponseDto {
     private Long projectId;
 
     @NotNull(message = "Project Id is requierd")
-    private Long assignedId;
+    private String assigneUsername;
 
     @NotBlank(message = "Title is required")
     @Size(min = 3, message = "Title must be at least 3 characters")

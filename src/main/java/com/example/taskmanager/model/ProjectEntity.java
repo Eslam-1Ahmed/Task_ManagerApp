@@ -32,7 +32,7 @@ public class ProjectEntity {
     private String name;
 
     @ManyToOne
-    @JoinColumn(name = "owner_id")
+    @JoinColumn(name = "ownerUsername")
     private UserEntity owner;
 
     @Column(length = 200)

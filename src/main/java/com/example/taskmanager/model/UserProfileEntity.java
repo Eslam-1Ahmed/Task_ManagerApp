@@ -21,7 +21,6 @@ public class UserProfileEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column
     private Long id;
 
     @Column
@@ -29,12 +28,12 @@ public class UserProfileEntity {
 
     @Column
     private String fullName;
-    
+
     @Column
     private String phone;
 
     @OneToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "username")
     private UserEntity user;
 
 }

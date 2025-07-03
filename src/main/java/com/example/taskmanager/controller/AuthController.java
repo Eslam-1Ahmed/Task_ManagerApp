@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.taskmanager.dto.LoginRequest;
+import com.example.taskmanager.dto.RefreshTokenRequest;
 import com.example.taskmanager.dto.RigisterDTO;
 import com.example.taskmanager.response.ApiResponse;
 import com.example.taskmanager.services.AuthService;
@@ -27,6 +28,12 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshToken(@RequestBody RefreshTokenRequest request) {
+        Map<String, String> tokens = authService.refreshAccessToken(request.getRefreshToken());
+        return ResponseEntity.ok(tokens);
+    }
+    
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginRequest request) {
         String token = authService.login(request);

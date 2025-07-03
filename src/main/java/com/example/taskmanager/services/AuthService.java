@@ -1,14 +1,17 @@
 package com.example.taskmanager.services;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import com.example.taskmanager.dto.LoginRequest;
 import com.example.taskmanager.dto.RigisterDTO;
 import com.example.taskmanager.enums.Role;
+import com.example.taskmanager.exception.ForbiddenException;
 import com.example.taskmanager.mapper.UserMapper;
 import com.example.taskmanager.model.AdminProfileEntity;
 import com.example.taskmanager.model.UserEntity;
@@ -37,19 +40,39 @@ public class AuthService {
    @Autowired
    private JwtService jwtService;
 
+   public Map<String, String> refreshAccessToken(String refreshToken) {
+      String username = jwtService.extractUsername(refreshToken);
+      UserEntity user = userDetailsService.loadUserByUsername(username);
+      if (!jwtService.isTokenValid(refreshToken, user.getUsername())) {
+         throw new ForbiddenException("Invalid or expired refresh token");
+      }
+      String newAccessToken = jwtService.generateToken(user);
+      String newRefreshToken = jwtService.generateRefershToken(user);
+
+      Map<String, String> tokens = new HashMap<>();
+      tokens.put("accessToken", newAccessToken);
+      tokens.put("refreshToken", newRefreshToken);
+      return tokens;
+   }
+
    public String register(RigisterDTO rigisterDTO) {
       if (userRepository.existsByUsername(rigisterDTO.getUsername())) {
          throw new RuntimeException("Username already exists");
       }
       UserEntity userEntity = userRepository.save(userMapper.toEntity(rigisterDTO));
       if (rigisterDTO.getRole() == Role.USER) {
-         userProfileRepository.save(UserProfileEntity.builder().address(rigisterDTO.getAddress())
-               .fullName(rigisterDTO.getFullname()).build());
+         userProfileRepository.save(UserProfileEntity.builder()
+               .address(rigisterDTO.getAddress())
+               .fullName(rigisterDTO.getFullname())
+               .user(userEntity)
+               .build());
       } else {
-         adminProfileRepository
-               .save(AdminProfileEntity.builder().department(rigisterDTO.getDepartment()).user(userEntity).build());
+         adminProfileRepository.save(AdminProfileEntity.builder()
+               .department(rigisterDTO.getDepartment())
+               .user(userEntity)
+               .build());
       }
-      return "Success";
+      return jwtService.generateToken(userEntity);
    }
 
    public String login(LoginRequest request) {
@@ -57,7 +80,7 @@ public class AuthService {
             new UsernamePasswordAuthenticationToken(
                   request.getUsername(),
                   request.getPassword()));
-      UserDetails user = userDetailsService.loadUserByUsername(request.getUsername());
+      UserEntity user = userDetailsService.loadUserByUsername(request.getUsername());
       return jwtService.generateToken(user);
    }
 }

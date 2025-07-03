@@ -40,7 +40,7 @@ public class TaskEntity {
     @Column(nullable = false)
     private Double price;
     @Column(nullable = false)
-    private Long ownerId;
+    private String ownerUsername;
 
     @Column
     @Builder.Default
@@ -48,7 +48,7 @@ public class TaskEntity {
     private TaskStatus status = TaskStatus.TODO;
 
     @ManyToOne
-    @JoinColumn(name = "assignee_id")
+    @JoinColumn(name = "assigneeUsername")
     private UserEntity assignee;
 
     @ManyToOne

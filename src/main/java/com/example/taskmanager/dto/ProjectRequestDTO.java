@@ -17,5 +17,5 @@ public class ProjectRequestDTO {
    private String description;
 
    @NotNull(message = "The ownerId is requierd")
-   private Long ownerId;
+   private String ownerUsername;
 }

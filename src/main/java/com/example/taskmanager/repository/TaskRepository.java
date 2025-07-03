@@ -13,18 +13,18 @@ import com.example.taskmanager.model.TaskEntity;
 @Repository
 public interface TaskRepository extends JpaRepository<TaskEntity, Long> {
 
-    public boolean existsById(Long id);
+        public boolean existsById(Long id);
 
-    public void deleteById(Long id);
+        public void deleteById(Long id);
 
-    @Query("select new com.example.taskmanager.dto.TaskResponseDto"
-            + "(t.id,project.id,t.assignee.id,"
-            + "t.title,t.description,t.priority,t.price,t.status) from TaskEntity t where t.assignee.id=:userId")
-    public Page<TaskResponseDto> findByUser_Id(Long userId, Pageable pageable);
+        @Query("select new com.example.taskmanager.dto.TaskResponseDto"
+                        + "(t.id,project.id,t.assignee.id,"
+                        + "t.title,t.description,t.priority,t.price,t.status) from TaskEntity t where t.assignee.username=:username")
+        public Page<TaskResponseDto> findByUsername(String username, Pageable pageable);
 
-    @Query("select new com.example.taskmanager.dto.TaskResponseDto"
-            + "(t.id,project.id,t.assignee.id,"
-            + "t.title,t.description,t.priority,t.price,t.status) from TaskEntity t where t.project.id=:projectId")
-    public Page<TaskResponseDto> findByProject_Id(Long projectId, Pageable pageable);
+        @Query("select new com.example.taskmanager.dto.TaskResponseDto"
+                        + "(t.id,project.id,t.assignee.id,"
+                        + "t.title,t.description,t.priority,t.price,t.status) from TaskEntity t where t.project.id=:projectId")
+        public Page<TaskResponseDto> findByProject_Id(Long projectId, Pageable pageable);
 
 }

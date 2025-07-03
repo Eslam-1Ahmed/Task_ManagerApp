@@ -12,9 +12,9 @@ import com.example.taskmanager.dto.UserDTO;
 import com.example.taskmanager.model.UserEntity;
 
 @Repository
-public interface UserRepository extends JpaRepository<UserEntity, Long> {
+public interface UserRepository extends JpaRepository<UserEntity, String> {
 
-    @Query("select new com.example.taskmanager.dto.UserDTO(u.id,u.username) from UserEntity u")
+    @Query("select new com.example.taskmanager.dto.UserDTO(u.username) from UserEntity u")
     public Page<UserDTO> getAllUsers(Pageable pageable);
 
     Optional<UserEntity> findByUsername(String username);

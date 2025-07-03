@@ -24,15 +24,19 @@ import com.example.taskmanager.repository.ProjectMembershipRepository;
 import com.example.taskmanager.repository.ProjectRepository;
 import com.example.taskmanager.repository.TaskRepository;
 import com.example.taskmanager.repository.UserRepository;
+import com.example.taskmanager.utils.AuthUtil;
 
 @Service
 public class TaskService {
 
     private final ProjectRepository projectRepository;
+
     @Autowired
     private TaskRepository taskRepository;
+
     @Autowired
     private ProjectMembershipRepository projectMembershipRepository;
+
     @Autowired
     private UserRepository userRepository;
 
@@ -45,89 +49,99 @@ public class TaskService {
 
     public TaskResponseDto addTask(TaskRequestDto taskRequestDto) {
         ProjectEntity projectEntity = projectRepository.findById(taskRequestDto.getProjectId())
-                .orElseThrow(
-                        () -> new ProjectNotFoundException(
-                                "Project with ID " + taskRequestDto.getProjectId() + " not found"));
-        if (!projectEntity.getOwner().getId().equals(taskRequestDto.getOwnerId())) {
-            throw new ForbiddenException("This User Can't Access This project");
+                .orElseThrow(() -> new ProjectNotFoundException(
+                        "Project with ID " + taskRequestDto.getProjectId() + " not found"));
+
+        if (!projectEntity.getOwner().getUsername().equals(AuthUtil.getCurrentUsername())) {
+            throw new ForbiddenException("Only the project owner can add tasks");
         }
-        return taskMapper.toDto(taskRepository.save(taskMapper.toEntityFromRequest(taskRequestDto)));
+
+        TaskEntity task = taskMapper.toEntityFromRequest(taskRequestDto);
+        return taskMapper.toDto(taskRepository.save(task));
     }
 
-    public List<TaskResponseDto> getAllTasks() {
-        taskRepository.findAll().stream().map(taskMapper::toDto).toList();
-        return taskRepository.findAll().stream().map(taskMapper::toDto).toList();
-    }
+    public String assignTask(Long taskId, String username) {
+        TaskEntity task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new TaskNotFoundException("Task with ID " + taskId + " not found"));
 
-    public String assigntask(Long id, Long userId, Long adminId) {
-        TaskEntity task = taskRepository.findById(id)
-                .orElseThrow(() -> new TaskNotFoundException("Task with ID " + id + " not found"));
-        Long projecId = task.getProject().getId();
-        if (task.getOwnerId().equals(adminId)) {
-            throw new ForbiddenException("This User Can't Access This project");
+        if (!task.getOwnerUsername().equals(AuthUtil.getCurrentUsername())) {
+            throw new ForbiddenException("Only the task owner can assign this task");
         }
-        if (!projectMembershipRepository.existsByProject_IdAndUser_Id(projecId, userId)) {
-            throw new ForbiddenException("This User Not a member in this project");
+        Long projectId = task.getProject().getId();
+        if (!projectMembershipRepository.existsByProject_IdAndUser_Username(projectId, username)) {
+            throw new ForbiddenException("The user is not a member of this project");
         }
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User with ID " + userId + " not found"));
+        UserEntity user = userRepository.findById(username)
+                .orElseThrow(() -> new UserNotFoundException("User with username " + username + " not found"));
         task.setAssignee(user);
         taskRepository.save(task);
-
-        return "Task assigned successfully to user ID " + userId;
+        return "Task assigned successfully to user: " + username;
     }
 
-    public TaskResponseDto getTaskById(Long id) {
-        TaskEntity task = taskRepository.findById(id)
-                .orElseThrow(() -> new TaskNotFoundException("Task with ID " + id + " not found"));
+    public TaskResponseDto getTaskById(Long taskId) {
+        TaskEntity task = getTaskIfAuthorized(taskId);
         return taskMapper.toDto(task);
     }
 
-    public List<TaskResponseDto> getTaskByuserId(Long userId, int page, int size, String sortBy) {
+    public List<TaskResponseDto> getMyTasks(int page, int size, String sortBy) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
-        Page<TaskResponseDto> task = taskRepository.findByUser_Id(userId, pageable);
-        return task.toList();
+        Page<TaskResponseDto> tasks = taskRepository.findByUsername(AuthUtil.getCurrentUsername(), pageable);
+        return tasks.toList();
     }
 
-    public List<TaskResponseDto> getTaskByprojectId(Long projectId, int page, int size, String sortBy) {
+    public List<TaskResponseDto> getTasksByProjectId(Long projectId, int page, int size, String sortBy) {
+        ProjectEntity project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ProjectNotFoundException("Project with ID " + projectId + " not found"));
+
+        if (!project.getOwner().getUsername().equals(AuthUtil.getCurrentUsername())) {
+            throw new ForbiddenException("Only the project owner can view its tasks");
+        }
+
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
-        Page<TaskResponseDto> task = taskRepository.findByProject_Id(projectId, pageable);
-        return task.toList();
+        Page<TaskResponseDto> tasks = taskRepository.findByProject_Id(projectId, pageable);
+        return tasks.toList();
     }
 
-    public void deleteTask(Long id, Long userId) {
-        TaskEntity taskEntity = taskRepository.findById(id).orElseThrow(
-                () -> new TaskNotFoundException("Task with ID " + id + " not found"));
-        if (!taskEntity.getOwnerId().equals(userId)) {
-            throw new ForbiddenException("This user can't access this task");
-        }
-        taskRepository.deleteById(id);
+    public void deleteTask(Long taskId) {
+        TaskEntity task = getTaskIfOwner(taskId);
+        taskRepository.delete(task);
     }
 
-    public TaskResponseDto updateTask(Long id, Long userId, TaskEntity updatedTask) {
-        TaskEntity taskEntity = taskRepository.findById(id).orElseThrow(
-                () -> new TaskNotFoundException("Task with ID " + id + " not found"));
-        if (!taskEntity.getOwnerId().equals(userId)) {
-            throw new ForbiddenException("This User Can't Access This task");
-        }
+    public TaskResponseDto updateTask(Long taskId, TaskEntity updatedTask) {
+        TaskEntity task = getTaskIfOwner(taskId);
+        updatedTask.setId(task.getId());
         return taskMapper.toDto(taskRepository.save(updatedTask));
     }
 
-    public String changeTaskStatus(Long id, Long userId, TaskStatus taskStatus) {
-        TaskEntity taskEntity = taskRepository.findById(id).orElseThrow(
-                () -> new TaskNotFoundException("Task with ID " + id + " not found"));
-        if (!taskEntity.getOwnerId().equals(userId) && taskEntity.getAssignee().getId().equals(userId)) {
-            throw new ForbiddenException("This user can't access this task");
-        }
-        taskEntity.setStatus(taskStatus);
-        taskRepository.save(taskEntity);
-        return "Status changed successfuly";
+    public String changeTaskStatus(Long taskId, TaskStatus status) {
+        TaskEntity task = getTaskIfAuthorized(taskId);
+        task.setStatus(status);
+        taskRepository.save(task);
+        return "Task status updated to " + status.name().toLowerCase();
     }
 
-    public List<TaskResponseDto> getPagedAndSortedTasks(int page, int size, String sortBy) {
+    private TaskEntity getTaskIfAuthorized(Long taskId) {
+        TaskEntity task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new TaskNotFoundException("Task with ID " + taskId + " not found"));
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy).ascending());
-        Page<TaskEntity> pageResult = taskRepository.findAll(pageable);
-        return pageResult.stream().map(taskMapper::toDto).toList();
+        String currentUsername = AuthUtil.getCurrentUsername();
+        boolean isAssignee = task.getAssignee() != null &&
+                task.getAssignee().getUsername().equals(currentUsername);
+        boolean isOwner = task.getOwnerUsername().equals(currentUsername);
+
+        if (!isAssignee && !isOwner) {
+            throw new ForbiddenException("You're not authorized to access this task");
+        }
+
+        return task;
+    }
+
+    private TaskEntity getTaskIfOwner(Long taskId) {
+        TaskEntity task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new TaskNotFoundException("Task with ID " + taskId + " not found"));
+        if (!task.getOwnerUsername().equals(AuthUtil.getCurrentUsername())) {
+            throw new ForbiddenException("Only the task owner can perform this operation");
+        }
+        return task;
     }
 }

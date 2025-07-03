@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.example.taskmanager.model.UserProfileEntity;
 
 @Repository
-public interface UserProfileRepository extends JpaRepository<UserProfileEntity,Long> {
+public interface UserProfileRepository extends JpaRepository<UserProfileEntity, Long> {
 
 }

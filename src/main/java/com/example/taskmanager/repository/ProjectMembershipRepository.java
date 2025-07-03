@@ -13,15 +13,15 @@ import com.example.taskmanager.model.ProjectMembershipEntity;
 @Repository
 public interface ProjectMembershipRepository extends JpaRepository<ProjectMembershipEntity, Long> {
 
-    boolean existsByProject_IdAndUser_Id(Long projectId, Long userId);
+    boolean existsByProject_IdAndUser_Username(Long projectId, String username);
 
-    Optional<ProjectMembershipEntity> findByProject_IdAndUser_Id(Long projectId, Long userId);
+    Optional<ProjectMembershipEntity> findByProject_IdAndUser_Username(Long projectId, String username);
 
     @Query(value = "SELECT new com.example.taskmanager.dto.ProjectMemberDto(" +
-            "u.id, u.username, u.email, up.fullName, p.status, p.requestedByUser) " +
+            "u.username, u.email, up.fullName, p.status, p.requestedByUser) " +
             "FROM ProjectMembershipEntity p " +
             "JOIN p.user u " +
             "LEFT JOIN u.userprofile up " +
             "WHERE p.project.id = :projectId", countQuery = "SELECT COUNT(p) FROM ProjectMembershipEntity p WHERE p.project.id = :projectId")
-    Page<ProjectMemberDto> getProjectMembers(Pageable pageable, Long projectId);
+    Page<ProjectMemberDto> getProjectMembers(Long projectId, Pageable pageable);
 }

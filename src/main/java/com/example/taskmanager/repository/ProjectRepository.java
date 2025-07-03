@@ -8,13 +8,13 @@ import org.springframework.stereotype.Repository;
 
 import com.example.taskmanager.dto.ProjectResponseDTO;
 import com.example.taskmanager.model.ProjectEntity;
-@Repository
-public interface ProjectRepository extends JpaRepository<ProjectEntity,Long> {
 
-    @Query(value = "select new com.example.taskmanager.dto.ProjectResponseDTO(p.name,p.description,p.numberOftasks) from ProjectEntity p where p.owner.id=:ownerId"
-    ,countQuery = "select COUNT(p) from ProjectEntity p where p.owner.id=:ownerId")
-    Page<ProjectResponseDTO> findAllByOwnerId(Long ownerId, Pageable pageable);
-    @Query(value = "select new com.example.taskmanager.dto.ProjectResponseDTO(p.name,p.description,p.numberOftasks) from ProjectEntity p"
-    ,countQuery = "select COUNT(p) from ProjectEntity p")
+@Repository
+public interface ProjectRepository extends JpaRepository<ProjectEntity, Long> {
+
+    @Query(value = "select new com.example.taskmanager.dto.ProjectResponseDTO(p.id,p.name,p.description,p.numberOftasks) from ProjectEntity p where p.owner.username=:ownerUsername", countQuery = "select COUNT(p) from ProjectEntity p where p.owner.username=:ownerUsername")
+    Page<ProjectResponseDTO> findAllByOwner_username(String username, Pageable pageable);
+
+    @Query(value = "select new com.example.taskmanager.dto.ProjectResponseDTO(p.id,p.name,p.description,p.numberOftasks) from ProjectEntity p", countQuery = "select COUNT(p) from ProjectEntity p")
     Page<ProjectResponseDTO> getAllProjects(Pageable pageable);
 }

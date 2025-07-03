@@ -16,6 +16,7 @@ import com.example.taskmanager.model.ProjectEntity;
 import com.example.taskmanager.model.UserEntity;
 import com.example.taskmanager.repository.ProjectRepository;
 import com.example.taskmanager.repository.UserRepository;
+import com.example.taskmanager.utils.AuthUtil;
 
 @Service
 public class ProjectService {
@@ -27,13 +28,13 @@ public class ProjectService {
     @Autowired
     private ProjectMapper projectMapper;
 
-    public String addProject(ProjectRequestDTO projectRequestDTO) {
-        UserEntity owner = userRepository.findById(projectRequestDTO.getOwnerId())
+    public ProjectResponseDTO addProject(ProjectRequestDTO projectRequestDTO) {
+        UserEntity owner = userRepository.findById(projectRequestDTO.getOwnerUsername())
                 .orElseThrow(() -> new UserNotFoundException(
                         "User Not Found"));
         ProjectEntity project = projectMapper.toEntityFromRequest(projectRequestDTO, owner);
-        projectRepository.save(project);
-        return "Added Successfully";
+
+        return projectMapper.toDto(projectRepository.save(project));
     }
 
     public List<ProjectResponseDTO> findAllProjects(int page, int size, String sortBy) {
@@ -41,8 +42,8 @@ public class ProjectService {
         return projectRepository.getAllProjects(pageable).toList();
     }
 
-    public List<ProjectResponseDTO> findAllProjects(Long ownerId, int page, int size, String sortBy) {
+    public List<ProjectResponseDTO> findMyProjects(int page, int size, String sortBy) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy).ascending());
-        return projectRepository.findAllByOwnerId(ownerId, pageable).toList();
+        return projectRepository.findAllByOwner_username(AuthUtil.getCurrentUsername(), pageable).toList();
     }
 }

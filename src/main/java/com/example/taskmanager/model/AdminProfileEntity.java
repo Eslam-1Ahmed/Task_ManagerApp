@@ -21,10 +21,10 @@ public class AdminProfileEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     private String department;
 
     @OneToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "username")
     private UserEntity user;
 }
